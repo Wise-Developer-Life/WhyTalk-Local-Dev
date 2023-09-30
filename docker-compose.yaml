@@ -1,0 +1,124 @@
+version: "3.8"
+services:
+  whytalk-message:
+    container_name: whytalk-message
+    image: ${JDK_BASE_IMAGE}
+    working_dir: /app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${DEPLOY_ENVIRONMENT}
+      SERVER_START_PORT: ${WHYTALK_MESSAGE_PORT}
+    ports:
+        - "${WHYTALK_MESSAGE_PORT}:${WHYTALK_MESSAGE_PORT}"
+    volumes:
+      - ${WHYTALK_MESSAGE_REPO}:/app
+    command: ["gradle", "bootRun"]
+
+  whytalk-matching:
+    container_name: whytalk-matching
+    image: ${JDK_BASE_IMAGE}
+    working_dir: /app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${DEPLOY_ENVIRONMENT}
+      SERVER_START_PORT: ${WHYTALK_MATCHING_PORT}
+    ports:
+      - "${WHYTALK_MATCHING_PORT}:${WHYTALK_MATCHING_PORT}"
+    volumes:
+      - ${WHYTALK_MATCHING_REPO}:/app
+    command: ["gradle", "bootRun"]
+
+  whytalk-user:
+    container_name: whytalk-user
+    image: ${JDK_BASE_IMAGE}
+    working_dir: /app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${DEPLOY_ENVIRONMENT}
+      SERVER_START_PORT: ${WHYTALK_USER_PORT}
+    ports:
+      - "${WHYTALK_USER_PORT}:${WHYTALK_USER_PORT}"
+    volumes:
+      - ${WHYTALK_USER_REPO}:/app
+    command: ["gradle", "bootRun"]
+
+  whytalk-auth:
+    container_name: whytalk-auth
+    image: ${JDK_BASE_IMAGE}
+    working_dir: /app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${DEPLOY_ENVIRONMENT}
+      SERVER_START_PORT: ${WHYTALK_AUTH_PORT}
+    ports:
+      - "${WHYTALK_AUTH_PORT}:${WHYTALK_AUTH_PORT}"
+    volumes:
+        - ${WHYTALK_AUTH_REPO}:/app
+    command: ["gradle", "bootRun"]
+
+  whytalk-socket:
+    container_name: whytalk-socket
+    image: ${NESTJS_BASE_IMAGE}
+    working_dir: /app
+    environment:
+      NODE_ENV: ${DEPLOY_ENVIRONMENT}
+      SERVER_START_PORT: ${WHYTALK_SOCKET_PORT}
+    ports:
+      - "${WHYTALK_SOCKET_PORT}:${WHYTALK_SOCKET_PORT}"
+    volumes:
+      - ${WHYTALK_SOCKET_REPO}:/app
+    command: ["bash", "-c", "npm install && npm run start:dev"]
+
+#  whytalk-ui:
+#    container_name: whytalk-ui
+#    image: ${REACT_BASE_IMAGE}
+#    working_dir: /app
+#    environment:
+#      SPRING_PROFILES_ACTIVE: ${DEPLOY_ENVIRONMENT}
+#    ports:
+#      - "3000:3000"
+#    volumes:
+#      - ${WHYTALK_UI_REPO}:/app
+#    command: ["npm", "run", "start:dev"]
+
+  whytalk-rabbitmq:
+    container_name: whytalk-rabbitmq
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./storage/mq-data:/var/lib/rabbitmq
+
+  whytalk-redis:
+    container_name: whytalk-redis
+    image: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./storage/redis-data:/data
+
+  whytalk-postgres:
+    container_name: whytalk-postgres
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: whytalk
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./storage/postgres-data:/var/lib/postgresql/data
+
+  whytalk-mongo:
+    container_name: whytalk-mongo
+    image: wisedevlife/whytalk-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_USERNAME: root
+      MONGO_INITDB_PASSWORD: admin
+      MONGO_INITDB_DATABASE: whytalk
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./storage/mongo-data:/data/db
+

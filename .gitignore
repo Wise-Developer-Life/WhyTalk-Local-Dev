@@ -1,0 +1,9 @@
+# idea ignore
+.idea
+misc.xml
+*.iml
+modules.xml
+vcs.xml
+
+# docker storage
+storage/
